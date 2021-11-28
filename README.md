@@ -10,9 +10,9 @@
 
 ### Requirements
 
-<img src="https://img.shields.io/badge/node-%3E%3D10.17-brightgreen"> &nbsp;
-<img src="https://img.shields.io/badge/homebridge-%3E%3D0.4.4-brightgreen"> &nbsp;
-<img src="https://img.shields.io/badge/iOS-%3E%3D11.0.0-brightgreen">
+<img src="https://img.shields.io/badge/node-%3E%3D14.5-brightgreen"> &nbsp;
+<img src="https://img.shields.io/badge/homebridge-%3E%3D1.3.4-brightgreen"> &nbsp;
+<img src="https://img.shields.io/badge/iOS-%3E%3D14.0.0-brightgreen">
 
 check with: `node -v` & `homebridge -V` and update if needed
 
