@@ -10,11 +10,11 @@ module.exports = function (platform) {
 	return {
 	
 		getState: (deviceName) => {
-			console.log('GET STATE REQUESTED')
+			
 
 			if (!statePromise) {
 				statePromise = new Promise((resolve, reject) => {
-					console.log('CREATING SINGLE REQUEST')
+					
 					let data = new FormData();
 					data.append('deviceName', deviceName);
 					data.append('email', platform.email);
@@ -31,16 +31,16 @@ module.exports = function (platform) {
 
 					axiosRequest(config)
 						.then(response => {
-							console.log('FINISHED REQUEST SUCCESSFULLY')
+							
 							resolve(response)
 						})
 						.catch(error => {
-							console.log('FINISHED REQUEST WITH ERRORS!')
+							
 							reject(error)
 						})
 						.finally(() => {
 							setTimeout(() => {
-								console.log('FINISHED ALL REQUESTS')
+								
 								statePromise = null
 							})
 						})
