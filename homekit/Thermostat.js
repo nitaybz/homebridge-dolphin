@@ -22,7 +22,7 @@ class AirConditioner {
 
 
 		if (!this.accessory) {
-			this.log(`Creating New ${platform.PLATFORM_NAME} ${this.type} Accessory in the ${this.roomName}`)
+			this.log(`Creating New ${platform.PLATFORM_NAME} Accessory (${this.name})`)
 			this.accessory = new this.api.platformAccessory(this.name, this.UUID)
 			this.accessory.context.deviceId = this.id
 			this.accessory.context.state = {}
