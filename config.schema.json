@@ -1,0 +1,63 @@
+{
+	"pluginAlias": "Dolphin",
+	"pluginType": "platform",
+	"singular": true,
+	"headerDisplay": "Homebridge plugin for Dolphin Boiler - Smart Water Heating Control",
+	"footerDisplay": "Created by @nitaybz",
+	"schema": {
+		"type": "object",
+		"properties": {
+			"email": {
+				"title": "Email",
+				"description": "Your Dolphin account email",
+				"type": "string",
+				"required": true
+			},
+			"secretKey": {
+				"title": "API Secret Key",
+				"description": "Your API secret key",
+				"type": "string",
+				"required": true
+			},
+			"devices": {
+				"title": "Dolphin Devices (Serial Number)",
+				"description": "Your device serial number",
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"required": true
+			},
+			"debug": {
+				"title": "Enable Debug Logs",
+				"description": "When checked, the plugin will produce extra logs for debugging purposes",
+				"type": "boolean",
+				"default": false,
+				"required": false
+			}
+		}
+	},
+	"layout": [
+		{
+			"key": "email"
+		},
+		{
+			"key": "secretKey"
+		},
+		{
+			"key": "devices",
+			"type": "array",
+			"title": "Dolphin Devices (Serial Number)",
+			"orderable": false,
+			"buttonText": "Add Device",
+			"expandable": false,
+			"expanded": true,
+			"items": {
+				"type": "string"
+			}
+		},
+		{
+			"key": "debug"
+		}
+	]
+}
