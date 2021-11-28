@@ -1,6 +1,6 @@
 {
   "name": "homebridge-dolphin",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "repository": {
     "type": "git",
     "url": "git://github.com/nitaybz/homebridge-dolphin.git"
@@ -25,6 +25,7 @@
   "dependencies": {
     "axios": "^0.24.0",
     "fakegato-history": "^0.5.6",
+    "form-data": "^4.0.0",
     "node-persist": "^3.0.5"
   },
   "devDependencies": {
