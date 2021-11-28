@@ -18,7 +18,7 @@ check with: `node -v` & `homebridge -V` and update if needed
 
 ## Installation
 
-This plugin is Homebridge verified and HOOBS certified and can be easily installed and configured through their UI.
+This plugin can be easily installed and configured through Homebridge/Hoobs UI.
 
 If you don't use Homebridge UI or HOOBS, or if you want to know more about the plugin features and options, keep reading...
 
