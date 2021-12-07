@@ -13,7 +13,11 @@
       "email": "user@name.com",
       "secretKey": "*************",
       "devices": [
-        "YFUY323DG43"
+        {
+          "serial": "YFUY323DG43",
+          "name": "Dolphin Boiler",
+          "enableShowerSwitches": true
+        }
       ]
     }
   ],

@@ -51,6 +51,25 @@ module.exports = function (platform) {
 
 		},
 	
+		setFixedTemperature: (deviceName, targetTemperature) => {
+			let data = new FormData();
+			data.append('deviceName', deviceName);
+			data.append('email', platform.email);
+			data.append('secretKey', platform.secretKey);
+			data.append('temperature', targetTemperature || '');
+			
+			const config = {
+				method: 'post',
+				url: 'https://api.dolphinboiler.com/V2/setFixedTemperature.php',
+				headers: { 
+					...data.getHeaders()
+				},
+				data : data
+			};
+			
+			return axiosRequest(config)
+		},
+	
 		turnOn: (deviceName, targetTemperature, quantity) => {
 			let data = new FormData();
 			data.append('deviceName', deviceName);
@@ -96,14 +115,14 @@ const axiosRequest = (config) => {
 		.then(function (response) {
 			const res = response
 			if (res.error) {
-				log(res.error);
+				log(res.error)
 				throw res.error
 			}
-			log.easyDebug(res.data);
+			log.easyDebug('Response:', JSON.stringify(res.data))
 			return res.data
 		})
 		.catch(function (error) {
-			log(error);
+			log(error)
 			throw error
 		});
 }

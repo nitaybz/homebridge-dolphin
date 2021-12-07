@@ -37,7 +37,11 @@ If you don't use Homebridge UI or HOOBS, or if you want to know more about the p
         "email": "user@name.com",
         "secretKey": "*************",
         "devices": [
-            "YFUY323DG43"
+            {
+            "serial": "YFUY323DG43",
+            "name": "Dolphin Boiler",
+            "enableShowerSwitches": true
+            }
         ]
     }
 ]
@@ -50,8 +54,11 @@ If you don't use Homebridge UI or HOOBS, or if you want to know more about the p
 | `platform`                       | always "Dolphin"    |     ✓    |      -    |  String  |
 | `email`                       | your Dolphin account email     |     ✓    |      -    |  String  |
 | `secretKey`                       | your Dolphin account API secret key                              |     ✓    |      -    |  String  |
-| `devices`                       | Devices Serial numbers as an array (support multiple devices)  |     ✓    |      -    |  Array  |
 | `debug`       |  When set to `true`, the plugin will produce extra logs for debugging purposes        |          |  `false` |   Boolean / Array*  |
+| **Devices**                       | List of Dolphin devices (with the below information)             |     ✓    |      -    |  Array   |
+| `serial`                          | Your Dolphin device serial number                                |     ✓    |      -    |  String  |
+| `name`                            | The accessory name that will appear in HomeKit                   |     ✓    |      -    |  String  |
+| `enableShowerSwitches`            | Enabling this will create switch for each amount of showers your boiler is capable of. It will allow you to turn on the boiler for X showers     |     ✓    |   true   |  Boolean |
 
 <br>
 ---

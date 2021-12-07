@@ -1,12 +1,12 @@
 let Characteristic, Service
 
-class AirConditioner {
-	constructor(deviceName, platform) {
+class Thermostat {
+	constructor(device, platform) {
 
 		Service = platform.api.hap.Service
 		Characteristic = platform.api.hap.Characteristic
 
-		this.deviceName = deviceName
+		this.deviceName = device.serial
 		this.log = platform.log
 		this.api = platform.api
 		this.storage = platform.storage
@@ -14,8 +14,9 @@ class AirConditioner {
 		this.model = 'Homebridge-Dolphin'
 		this.serial = this.deviceName
 		this.manufacturer = 'Dolphin'
-		this.name = `Dolphin ${deviceName}`
+		this.name = device.name || `Dolphin ${this.deviceName}`
 		this.displayName = this.name
+		this.showerSwitches = {}
 
 		this.UUID = this.api.hap.uuid.generate(this.id.toString())
 		this.accessory = platform.cachedAccessories.find(accessory => accessory.UUID === this.UUID)
@@ -37,6 +38,8 @@ class AirConditioner {
 			this.loggingService = new FakeGatoHistoryService('weather', this.accessory, { storage: 'fs', path: platform.persistPath })
 		}
 
+		this.state = this.accessory.context.state
+
 		this.stateManager = require('./StateManager')(this, platform)
 
 		let informationService = this.accessory.getService(Service.AccessoryInformation)
@@ -48,9 +51,19 @@ class AirConditioner {
 			.setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
 			.setCharacteristic(Characteristic.Model, this.model)
 			.setCharacteristic(Characteristic.SerialNumber, this.serial)
-	
 
 		this.addThermostatService()
+
+		if (device.enableShowerSwitches) {
+			this.dropsInterval = setInterval(() => {
+				if (this.state.showerTemperature && this.state.showerTemperature.length) {
+					this.refreshDrops()
+					setInterval(this.refreshDrops.bind(this), 60000)
+					clearInterval(this.dropsInterval)
+				}
+			}, 5000)
+		} else
+			this.removeDrops()
 	}
 
 	addThermostatService() {
@@ -66,7 +79,11 @@ class AirConditioner {
 		const props = [Characteristic.TargetHeatingCoolingState.OFF, Characteristic.TargetHeatingCoolingState.HEAT]
 	
 		this.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState)
-			.setProps({validValues: props})
+			.setProps({
+				validValues: props,
+				minValue: 0,
+				maxValue: 1
+			})
 			.onGet(this.stateManager.get.TargetHeatingCoolingState)
 			.onSet(this.stateManager.set.TargetHeatingCoolingState)
 
@@ -99,31 +116,74 @@ class AirConditioner {
 	// 	}
 	// }
 	
-	// addManualControlService() {
-	// 	this.log.easyDebug(`Adding Manual Control Switch Service in the ${this.roomName}`)
+	addSwitchService(numberOfShowers) {
+		const name = getShowerName(numberOfShowers)
+		this.log.easyDebug(`Adding "${name}" Switch Service for Dolphin device (${this.deviceName})`)
 
-	// 	this.ManualControlService = this.accessory.getService(this.name + ' Manual')
-	// 	if (!this.ManualControlService)
-	// 		this.ManualControlService = this.accessory.addService(Service.Switch, this.name + ' Manual', 'ManualControl')
+		this.showerSwitches[numberOfShowers] = this.accessory.getService(name)
+		if (!this.showerSwitches[numberOfShowers])
+			this.showerSwitches[numberOfShowers] = this.accessory.addService(Service.Switch, name, name + this.deviceName)
+
+		this.showerSwitches[numberOfShowers].getCharacteristic(Characteristic.On)
+			.onGet(() => false)
+			.onSet(state => {
+				if (state)
+					return this.stateManager.set.ShowerSwitch(numberOfShowers)
+						.then(() => setTimeout(() => this.showerSwitches[numberOfShowers].getCharacteristic(Characteristic.On).updateValue(false), 2000))
+				return Promise.resolve()
+			})
+
+	}
+
+	removeSwitchService(numberOfShowers) {
+		const name = getShowerName(numberOfShowers)
+		let ShowerSwitch = this.accessory.getService(name)
+		if (ShowerSwitch) {
+			// remove service
+			this.accessory.removeService(ShowerSwitch)
+		}
+	}
+
+	refreshDrops() {
+		if (this.state && this.state.showerTemperature && this.state.showerTemperature.length) {
+			
+			// search for new drops to add
+			this.state.showerTemperature.forEach(shower => {
+				if (!this.showerSwitches[shower.drop]) {
+					this.addSwitchService(shower.drop)
+				}
+			})
+
+			// search for drops to remove
+			for (const switchDrop of Object.keys(this.showerSwitches)) {
+				const dropFound = this.state.showerTemperature.find(shower => shower.drop == switchDrop)
+				if (!dropFound) {
+					this.log.easyDebug(`Removing ${getShowerName(switchDrop)} Switch (${this.deviceName})`)
+					delete this.showerSwitches[switchDrop]
+					this.removeSwitchService(switchDrop)
+				}
+			}
+		}
+	}
 
 
-	// 	this.ManualControlService.getCharacteristic(Characteristic.On)
-	// 		.onGet(this.stateManager.get.ManualControl)
-	// 		.onSet(this.stateManager.set.ManualControl)
-
-	// }
-
-	// removeManualControlService() {
-	// 	let ManualControlService = this.accessory.getService(this.name + ' Manual')
-	// 	if (ManualControlService) {
-	// 		// remove service
-	// 		this.log.easyDebug(`Removing Manual Control Switch Service from the ${this.roomName}`)
-	// 		this.accessory.removeService(ManualControlService)
-	// 	}
-	// }
-
+	removeDrops() {
+		for (let numberOfShowers = 1; numberOfShowers < 7; numberOfShowers++) {
+			const name = getShowerName(numberOfShowers)
+			let ShowerSwitch = this.accessory.getService(name)
+			if (ShowerSwitch) {
+				this.log.easyDebug(`Removing ${name} Switch (${this.deviceName})`)
+				this.accessory.removeService(ShowerSwitch)
+			}
+		}
+	}
 	
 }
 
+const getShowerName = (numberOfShowers) => {
+	return `${numberOfShowers} Shower${numberOfShowers > 1 ? 's' : ''}`
+}
 
-module.exports = AirConditioner
+
+
+module.exports = Thermostat

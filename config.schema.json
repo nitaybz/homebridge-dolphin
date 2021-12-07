@@ -20,11 +20,33 @@
 				"required": true
 			},
 			"devices": {
-				"title": "Dolphin Devices (Serial Number)",
-				"description": "Your device serial number",
+				"title": "Dolphin Devices",
 				"type": "array",
 				"items": {
-					"type": "string"
+					"title": "Dolphin Devices",
+					"type": "object",
+					"properties": {
+						"serial": {
+							"title": "Device Serial Number",
+							"description": "Your Dolphin device serial number",
+							"type": "string",
+							"required": true
+						},
+						"name": {
+							"title": "Accessory Name",
+							"description": "The accessory name that will appear in HomeKit",
+							"type": "string",
+							"default": "Dolphin Boiler",
+							"required": true
+						},
+						"enableShowerSwitches": {
+							"title": "Enable Shower Switches",
+							"description": "Enabling this will create switch for each amount of showers your boiler is capable of. It will allow you to turn on the boiler for X showers",
+							"type": "boolean",
+							"default": true,
+							"required": true
+						}
+					}
 				},
 				"required": true
 			},
@@ -47,14 +69,16 @@
 		{
 			"key": "devices",
 			"type": "array",
-			"title": "Dolphin Devices (Serial Number)",
+			"title": "Dolphin Devices",
 			"orderable": false,
 			"buttonText": "Add Device",
 			"expandable": false,
 			"expanded": true,
-			"items": {
-				"type": "string"
-			}
+			"items": [
+				"devices[].serial",
+				"devices[].name",
+				"devices[].enableShowerSwitches"
+				]
 		},
 		{
 			"key": "debug"

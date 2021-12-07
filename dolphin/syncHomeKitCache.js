@@ -9,7 +9,7 @@ module.exports = (platform) => {
 		// find devices to remove
 		const accessoriesToRemove = []
 		platform.cachedAccessories.forEach(accessory => {
-			let deviceExists = platform.devices.find(device => device === accessory.context.deviceId)
+			let deviceExists = platform.devices.find(device => device.serial === accessory.context.deviceId)
 			if (!deviceExists)
 				accessoriesToRemove.push(accessory)
 		})
