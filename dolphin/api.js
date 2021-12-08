@@ -29,7 +29,6 @@ module.exports = function (platform) {
 
 				axiosRequest(config)
 					.then(response => {
-						log('token response', response)
 						if (response.access_token) {
 							token = response.access_token
 							resolve(token)
