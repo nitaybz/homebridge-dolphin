@@ -1,10 +1,13 @@
-let Characteristic, Service
+let Characteristic, Service, dropTemp
 
 class Thermostat {
 	constructor(device, platform) {
 
 		Service = platform.api.hap.Service
 		Characteristic = platform.api.hap.Characteristic
+
+		dropTemp = require('./dropTemp')(platform.api.hap)
+
 
 		this.deviceName = device.serial
 		this.log = platform.log
@@ -132,6 +135,18 @@ class Thermostat {
 						.then(() => setTimeout(() => this.showerSwitches[numberOfShowers].getCharacteristic(Characteristic.On).updateValue(false), 2000))
 				return Promise.resolve()
 			})
+				
+		
+		const dropTempCharacteristic = this.showerSwitches[numberOfShowers].getCharacteristic(dropTemp)
+		if (!dropTempCharacteristic)
+			this.showerSwitches[numberOfShowers].addOptionalCharacteristic(dropTemp)
+				.onGet(() => {
+					const drop = this.state.showerTemperature.find(shower => shower.drop == numberOfShowers)
+					if (drop)
+						return drop.temp
+					else 
+						return new Error('No Drops found')
+				})
 
 	}
 

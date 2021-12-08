@@ -28,12 +28,12 @@ class dolphinPlatform {
 
 		
 		this.email = config['email']
-		this.secretKey = config['secretKey']
+		this.password = config['password']
 		this.devices = config['devices']
 		
-		if (!this.email || !this.secretKey) {
+		if (!this.email || !this.password) {
 			this.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  --  ERROR  --  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n')
-			this.log('Can\'t start homebridge-dolphin plugin without email and secret key !!\n')
+			this.log('Can\'t start homebridge-dolphin plugin without email and password !!\n')
 			this.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n')
 			return
 		}

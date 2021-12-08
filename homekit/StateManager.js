@@ -17,21 +17,22 @@ module.exports = (device, platform) => {
 	const updateState = (res) => {
 		const state = res.Status
 		if (res.Status) {
-			updateDeviceState(state)
-			if (state.Power === 'OFF') {
-				device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
-				device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
-			} else {
-				device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(1)
-				device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
+			setTimeout(() => {
+				updateDeviceState(state)
+				if (state.Power === 'OFF') {
+					device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
+					device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
+				} else {
+					device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(1)
+					device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
+				}
+				device.ThermostatService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(state.Temperature)
 				if (state.targetTemperature)
 					device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(state.targetTemperature)
-			}
-			device.ThermostatService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(state.Temperature)
-		} else { // patch for not getting status on OFF command
-			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
-			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
-			device.state.Power = 'OFF'
+
+				if (state.targetTemperature)
+					device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(state.targetTemperature)
+			}, 1000)
 		}
 	}
 
@@ -44,13 +45,7 @@ module.exports = (device, platform) => {
 					.then(state => {
 						updateDeviceState(state)
 						log.easyDebug(`[CurrentHeatingCoolingState] Device ${device.deviceName} is ${state.fixedTemperature || state.Power}`)
-						if ((!state.fixedTemperature || state.fixedTemperature !== 'ON') && state.Power === 'OFF')
-							return Characteristic.CurrentHeatingCoolingState.OFF
-						else
-							return Characteristic.CurrentHeatingCoolingState.HEAT
-					})
-					.catch(err => {
-						throw err
+						return ((!state.fixedTemperature || state.fixedTemperature !== 'ON') && state.Power === 'OFF') ? 0 : 1
 					})
 			},
 
@@ -60,13 +55,7 @@ module.exports = (device, platform) => {
 					.then(state => {
 						updateDeviceState(state)
 						log.easyDebug(`[TargetHeatingCoolingState] Device ${device.deviceName} is ${state.fixedTemperature || state.Power}`)
-						if ((!state.fixedTemperature || state.fixedTemperature !== 'ON') && state.Power === 'OFF')
-							return Characteristic.TargetHeatingCoolingState.OFF
-						else
-							return Characteristic.TargetHeatingCoolingState.HEAT
-					})
-					.catch(err => {
-						throw err
+						return ((!state.fixedTemperature || state.fixedTemperature !== 'ON') && state.Power === 'OFF') ? 0 : 1
 					})
 			},
 
@@ -77,9 +66,6 @@ module.exports = (device, platform) => {
 						log.easyDebug(`[TargetHeatingCoolingState] Device ${device.deviceName} Temperature is ${state.Temperature}ºC`)
 						return state.Temperature
 					})
-					.catch(err => {
-						throw err
-					})
 			},
 
 			TargetTemperature: () => {
@@ -88,9 +74,6 @@ module.exports = (device, platform) => {
 						updateDeviceState(state)
 						log.easyDebug(`[TargetTemperature] Device ${device.deviceName} Target Temperature is ${device.state.targetTemperature || 37}ºC`)
 						return device.state.targetTemperature || 37
-					})
-					.catch(err => {
-						throw err
 					})
 			},
 

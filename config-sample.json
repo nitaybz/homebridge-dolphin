@@ -11,7 +11,7 @@
     {
       "platform": "Dolphin",
       "email": "user@name.com",
-      "secretKey": "*************",
+      "password": "*************",
       "devices": [
         {
           "serial": "YFUY323DG43",

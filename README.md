@@ -35,7 +35,7 @@ If you don't use Homebridge UI or HOOBS, or if you want to know more about the p
     {
         "platform": "Dolphin",
         "email": "user@name.com",
-        "secretKey": "*************",
+        "password": "*************",
         "devices": [
             {
             "serial": "YFUY323DG43",
@@ -53,7 +53,7 @@ If you don't use Homebridge UI or HOOBS, or if you want to know more about the p
 | -------------------------------- | ------------------------------------------------------- |:--------:|:---------:|:---------:|
 | `platform`                       | always "Dolphin"    |     ✓    |      -    |  String  |
 | `email`                       | your Dolphin account email     |     ✓    |      -    |  String  |
-| `secretKey`                       | your Dolphin account API secret key                              |     ✓    |      -    |  String  |
+| `password`                       | your Dolphin account password                             |     ✓    |      -    |  String  |
 | `debug`       |  When set to `true`, the plugin will produce extra logs for debugging purposes        |          |  `false` |   Boolean / Array*  |
 | **Devices**                       | List of Dolphin devices (with the below information)             |     ✓    |      -    |  Array   |
 | `serial`                          | Your Dolphin device serial number                                |     ✓    |      -    |  String  |
