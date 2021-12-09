@@ -77,6 +77,14 @@ module.exports = (device, platform) => {
 					})
 			},
 
+			DropTemp: (numberOfShowers) => {
+				const drop = device.state.showerTemperature.find(shower => shower.drop == numberOfShowers)
+				if (drop)
+					return drop.temp
+				else 
+					return new Error('No Drops found')
+			}
+
 		},
 	
 		set: {

@@ -140,13 +140,9 @@ class Thermostat {
 		const dropTempCharacteristic = this.showerSwitches[numberOfShowers].getCharacteristic(dropTemp)
 		if (!dropTempCharacteristic)
 			this.showerSwitches[numberOfShowers].addOptionalCharacteristic(dropTemp)
-				.onGet(() => {
-					const drop = this.state.showerTemperature.find(shower => shower.drop == numberOfShowers)
-					if (drop)
-						return drop.temp
-					else 
-						return new Error('No Drops found')
-				})
+				.onGet(() => this.stateManager.get.DropTemp(numberOfShowers))
+		else
+			dropTempCharacteristic.onGet(() => this.stateManager.get.DropTemp(numberOfShowers))
 
 	}
 
