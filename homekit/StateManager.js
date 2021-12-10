@@ -4,6 +4,8 @@ module.exports = (device, platform) => {
 	const dolphinApi = platform.dolphinApi
 
 	const updateDeviceState = (state) => {
+
+		// update cache
 		if (state.Power && device.state.Power !== state.Power)
 			device.state.Power = state.Power
 		if (state.Temperature && device.state.Temperature !== state.Temperature)
@@ -12,6 +14,30 @@ module.exports = (device, platform) => {
 			device.state.targetTemperature = state.targetTemperature
 		if (state.showerTemperature)
 			device.state.showerTemperature = state.showerTemperature
+
+		// update HomeKit
+		if (state.Power === 'OFF') {
+			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
+			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
+		} else {
+			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(1)
+			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
+		}
+		device.ThermostatService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(state.Temperature)
+		device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(state.targetTemperature || 37)
+
+		if (device.enableShowerSwitches && state.showerTemperature) {
+			for (const switchDrop of Object.keys(device.showerSwitches)) {
+				const dropFound = state.showerTemperature.find(shower => shower.drop == switchDrop)
+				if (dropFound) {
+					device.showerSwitches[switchDrop].getCharacteristic(device.dropTemp).updateValue(dropFound.temp)
+					if (state.Temperature >= dropFound.temp)
+						device.showerSwitches[switchDrop].getCharacteristic(Characteristic.On).updateValue(true)
+					else
+						device.showerSwitches[switchDrop].getCharacteristic(Characteristic.On).updateValue(false)
+				}
+			}
+		}
 	}
 
 	const updateState = (res) => {
@@ -30,8 +56,18 @@ module.exports = (device, platform) => {
 				if (state.targetTemperature)
 					device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(state.targetTemperature)
 
-				if (state.targetTemperature)
-					device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(state.targetTemperature)
+				if (device.enableShowerSwitches && device.state.showerTemperature) {
+					for (const switchDrop of Object.keys(device.showerSwitches)) {
+						const dropFound = device.state.showerTemperature.find(shower => shower.drop == switchDrop)
+						if (dropFound) {
+							device.showerSwitches[switchDrop].getCharacteristic(device.dropTemp).updateValue(dropFound.temp)
+							if (state.Temperature >= dropFound.temp)
+								device.showerSwitches[switchDrop].getCharacteristic(Characteristic.On).updateValue(true)
+							else
+								device.showerSwitches[switchDrop].getCharacteristic(Characteristic.On).updateValue(false)
+						}
+					}
+				}
 			}, 1000)
 		}
 	}
@@ -40,50 +76,55 @@ module.exports = (device, platform) => {
 
 		get: {
 
-			CurrentHeatingCoolingState: () => {
-				return dolphinApi.getState(device.deviceName)
-					.then(state => {
-						updateDeviceState(state)
-						log.easyDebug(`[CurrentHeatingCoolingState] Device ${device.deviceName} is ${state.fixedTemperature || state.Power}`)
-						return ((!state.fixedTemperature || state.fixedTemperature !== 'ON') && state.Power === 'OFF') ? 0 : 1
-					})
+			refreshState: () => {
+				dolphinApi.getState(device.deviceName)
+					.then(updateDeviceState)
 			},
 
-			TargetHeatingCoolingState: () => {
+			// CurrentHeatingCoolingState: () => {
+			// 	return dolphinApi.getState(device.deviceName)
+			// 		.then(state => {
+			// 			updateDeviceState(state)
+			// 			log.easyDebug(`[CurrentHeatingCoolingState] Device ${device.deviceName} is ${state.fixedTemperature || state.Power}`)
+			// 			return ((!state.fixedTemperature || state.fixedTemperature !== 'ON') && state.Power === 'OFF') ? 0 : 1
+			// 		})
+			// },
 
-				return dolphinApi.getState(device.deviceName)
-					.then(state => {
-						updateDeviceState(state)
-						log.easyDebug(`[TargetHeatingCoolingState] Device ${device.deviceName} is ${state.fixedTemperature || state.Power}`)
-						return ((!state.fixedTemperature || state.fixedTemperature !== 'ON') && state.Power === 'OFF') ? 0 : 1
-					})
-			},
+			// TargetHeatingCoolingState: () => {
 
-			CurrentTemperature: () => {
-				return dolphinApi.getState(device.deviceName)
-					.then(state => {
-						updateDeviceState(state)
-						log.easyDebug(`[TargetHeatingCoolingState] Device ${device.deviceName} Temperature is ${state.Temperature}ºC`)
-						return state.Temperature
-					})
-			},
+			// 	return dolphinApi.getState(device.deviceName)
+			// 		.then(state => {
+			// 			updateDeviceState(state)
+			// 			log.easyDebug(`[TargetHeatingCoolingState] Device ${device.deviceName} is ${state.fixedTemperature || state.Power}`)
+			// 			return ((!state.fixedTemperature || state.fixedTemperature !== 'ON') && state.Power === 'OFF') ? 0 : 1
+			// 		})
+			// },
 
-			TargetTemperature: () => {
-				return dolphinApi.getState(device.deviceName)
-					.then(state => {
-						updateDeviceState(state)
-						log.easyDebug(`[TargetTemperature] Device ${device.deviceName} Target Temperature is ${device.state.targetTemperature || 37}ºC`)
-						return device.state.targetTemperature || 37
-					})
-			},
+			// CurrentTemperature: () => {
+			// 	return dolphinApi.getState(device.deviceName)
+			// 		.then(state => {
+			// 			updateDeviceState(state)
+			// 			log.easyDebug(`[TargetHeatingCoolingState] Device ${device.deviceName} Temperature is ${state.Temperature}ºC`)
+			// 			return state.Temperature
+			// 		})
+			// },
 
-			DropTemp: (numberOfShowers) => {
-				const drop = device.state.showerTemperature.find(shower => shower.drop == numberOfShowers)
-				if (drop)
-					return drop.temp
-				else 
-					return new Error('No Drops found')
-			}
+			// TargetTemperature: () => {
+			// 	return dolphinApi.getState(device.deviceName)
+			// 		.then(state => {
+			// 			updateDeviceState(state)
+			// 			log.easyDebug(`[TargetTemperature] Device ${device.deviceName} Target Temperature is ${device.state.targetTemperature || 37}ºC`)
+			// 			return device.state.targetTemperature || 37
+			// 		})
+			// },
+
+			// DropTemp: (numberOfShowers) => {
+			// 	const drop = device.state.showerTemperature.find(shower => shower.drop == numberOfShowers)
+			// 	if (drop)
+			// 		return drop.temp
+			// 	else 
+			// 		return new Error('No Drops found')
+			// }
 
 		},
 	

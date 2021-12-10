@@ -1,4 +1,4 @@
-let Characteristic, Service, dropTemp
+let Characteristic, Service
 
 class Thermostat {
 	constructor(device, platform) {
@@ -6,9 +6,9 @@ class Thermostat {
 		Service = platform.api.hap.Service
 		Characteristic = platform.api.hap.Characteristic
 
-		dropTemp = require('./dropTemp')(platform.api.hap)
+		this.dropTemp = require('./dropTemp')(platform.api.hap)
 
-
+		this.enableShowerSwitches = device.enableShowerSwitches
 		this.deviceName = device.serial
 		this.log = platform.log
 		this.api = platform.api
@@ -57,7 +57,10 @@ class Thermostat {
 
 		this.addThermostatService()
 
-		if (device.enableShowerSwitches) {
+		this.stateManager.get.refreshState()
+		setInterval(this.stateManager.get.refreshState, 90000)
+
+		if (this.enableShowerSwitches) {
 			this.dropsInterval = setInterval(() => {
 				if (this.state.showerTemperature && this.state.showerTemperature.length) {
 					this.refreshDrops()
@@ -76,7 +79,6 @@ class Thermostat {
 			this.ThermostatService = this.accessory.addService(Service.Thermostat, this.name, 'Thermostat')
 
 		this.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
-			.onGet(this.stateManager.get.CurrentHeatingCoolingState)
 
 
 		const props = [Characteristic.TargetHeatingCoolingState.OFF, Characteristic.TargetHeatingCoolingState.HEAT]
@@ -87,7 +89,6 @@ class Thermostat {
 				minValue: 0,
 				maxValue: 1
 			})
-			.onGet(this.stateManager.get.TargetHeatingCoolingState)
 			.onSet(this.stateManager.set.TargetHeatingCoolingState)
 
 
@@ -97,7 +98,6 @@ class Thermostat {
 				maxValue: 100,
 				minStep: 1
 			})
-			.onGet(this.stateManager.get.CurrentTemperature)
 
 		this.ThermostatService.getCharacteristic(Characteristic.TargetTemperature)
 			.setProps({
@@ -105,7 +105,6 @@ class Thermostat {
 				maxValue: 70,
 				minStep: 1
 			})
-			.onGet(this.stateManager.get.TargetTemperature)
 			.onSet(this.stateManager.set.TargetTemperature)
 
 	}
@@ -128,21 +127,19 @@ class Thermostat {
 			this.showerSwitches[numberOfShowers] = this.accessory.addService(Service.Switch, name, name + this.deviceName)
 
 		this.showerSwitches[numberOfShowers].getCharacteristic(Characteristic.On)
-			.onGet(() => false)
+			// .onGet(() => false)
 			.onSet(state => {
 				if (state)
 					return this.stateManager.set.ShowerSwitch(numberOfShowers)
-						.then(() => setTimeout(() => this.showerSwitches[numberOfShowers].getCharacteristic(Characteristic.On).updateValue(false), 2000))
 				return Promise.resolve()
 			})
 				
 		
-		const dropTempCharacteristic = this.showerSwitches[numberOfShowers].getCharacteristic(dropTemp)
-		if (!dropTempCharacteristic)
-			this.showerSwitches[numberOfShowers].addOptionalCharacteristic(dropTemp)
-				.onGet(() => this.stateManager.get.DropTemp(numberOfShowers))
+		this.showerSwitches[numberOfShowers].addOptionalCharacteristic(this.dropTemp)
+		if (this.state.showerTemperature)
+			this.showerSwitches[numberOfShowers].getCharacteristic(this.dropTemp).updateValue(this.state.showerTemperature.find(shower => shower.drop == numberOfShowers).temp)
 		else
-			dropTempCharacteristic.onGet(() => this.stateManager.get.DropTemp(numberOfShowers))
+			this.showerSwitches[numberOfShowers].getCharacteristic(this.dropTemp).updateValue(37)
 
 	}
 
