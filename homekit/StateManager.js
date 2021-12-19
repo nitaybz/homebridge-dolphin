@@ -6,6 +6,12 @@ module.exports = (device, platform) => {
 	const updateDeviceState = (state) => {
 
 		// update cache
+		if (state.fixedTemperature && state.fixedTemperature === 'ON')
+			device.state.fixedTemperature = 'ON'
+		else
+			device.state.fixedTemperature = 'OFF'
+		if (state.Power && device.state.Power !== state.Power)
+			device.state.Power = state.Power
 		if (state.Power && device.state.Power !== state.Power)
 			device.state.Power = state.Power
 		if (state.Temperature && device.state.Temperature !== state.Temperature)
@@ -16,15 +22,15 @@ module.exports = (device, platform) => {
 			device.state.showerTemperature = state.showerTemperature
 
 		// update HomeKit
-		if (state.Power === 'OFF') {
+		if (device.state.Power === 'OFF' && device.state.fixedTemperature !== 'ON') {
 			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
 			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
 		} else {
 			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(1)
 			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
 		}
-		device.ThermostatService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(state.Temperature)
-		device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(state.targetTemperature || 37)
+		device.ThermostatService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(device.state.Temperature)
+		device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(device.state.targetTemperature || 37)
 
 		if (device.enableShowerSwitches && state.showerTemperature) {
 			for (const switchDrop of Object.keys(device.showerSwitches)) {
