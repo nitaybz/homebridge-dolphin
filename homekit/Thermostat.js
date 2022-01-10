@@ -9,6 +9,7 @@ class Thermostat {
 		this.dropTemp = require('./dropTemp')(platform.api.hap)
 
 		this.enableShowerSwitches = device.enableShowerSwitches
+		this.hotWaterSensor = device.hotWaterSensor
 		this.deviceName = device.serial
 		this.log = platform.log
 		this.api = platform.api
@@ -20,6 +21,7 @@ class Thermostat {
 		this.name = device.name || `Dolphin ${this.deviceName}`
 		this.displayName = this.name
 		this.showerSwitches = {}
+		this.boilRequested =  false
 
 		this.UUID = this.api.hap.uuid.generate(this.id.toString())
 		this.accessory = platform.cachedAccessories.find(accessory => accessory.UUID === this.UUID)
@@ -27,7 +29,7 @@ class Thermostat {
 
 		if (!this.accessory) {
 			this.log(`Creating New ${platform.PLATFORM_NAME} Accessory (${this.name})`)
-			this.accessory = new this.api.platformAccessory(this.name, this.UUID)
+			this.accessory = new this.api.platformAccessory(this.name  + ' Main', this.UUID)
 			this.accessory.context.deviceId = this.id
 			this.accessory.context.state = {}
 
@@ -70,6 +72,12 @@ class Thermostat {
 			}, 5000)
 		} else
 			this.removeDrops()
+
+		if (this.hotWaterSensor)
+			this.addSensorService(this.hotWaterSensor)
+		else
+			this.removeSensorService()
+
 	}
 
 	addThermostatService() {
@@ -127,7 +135,6 @@ class Thermostat {
 			this.showerSwitches[numberOfShowers] = this.accessory.addService(Service.Switch, name, name + this.deviceName)
 
 		this.showerSwitches[numberOfShowers].getCharacteristic(Characteristic.On)
-			// .onGet(() => false)
 			.onSet(state => {
 				if (state)
 					return this.stateManager.set.ShowerSwitch(numberOfShowers)
@@ -149,6 +156,59 @@ class Thermostat {
 		if (ShowerSwitch) {
 			// remove service
 			this.accessory.removeService(ShowerSwitch)
+		}
+	}
+
+
+	addSensorService(sensorType) {
+
+		const sensorTypes = ['LeakSensor', 'ContactSensor', 'OccupancySensor']
+
+		if (!sensorTypes.includes(sensorType)) {
+			this.log.error('Wrong Sensor Type - NOT ADDING SENSOR')
+			return
+		}
+
+		this.SensorCharacteristic = (() => {
+			switch (sensorType) {
+				case 'LeakSensor':
+					return Characteristic.LeakDetected
+				case 'ContactSensor':
+					return Characteristic.ContactSensorState
+				default:
+					return Characteristic.OccupancyDetected
+			}
+		})()
+
+		const name = 'Hot Water'
+		this.log.easyDebug(`Adding "${name}" ${sensorType} Service for Dolphin device (${this.deviceName})`)
+
+		this.SensorService = this.accessory.getService(name)
+		if (!this.SensorService)
+			this.SensorService = this.accessory.addService(Service[sensorType], name, name + this.deviceName)
+
+		this.SensorService.getCharacteristic(this.SensorCharacteristic)
+			.updateValue(0)
+
+
+		sensorTypes.forEach(type => {
+			if (type !== sensorType) {
+				let removeSensor = this.accessory.getService(Service[type])
+				if (removeSensor) {
+					this.log.easyDebug(`Removing "${name}" ${type} Service from Dolphin device (${this.deviceName})`)
+					this.accessory.removeService(removeSensor)
+				}
+			}
+		})
+				
+
+	}
+
+	removeSensorService() {
+		let sensor = this.accessory.getService('Hot Water')
+		if (sensor) {
+			// remove service
+			this.accessory.removeService(sensor)
 		}
 	}
 

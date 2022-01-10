@@ -21,13 +21,28 @@ module.exports = (device, platform) => {
 		if (state.showerTemperature)
 			device.state.showerTemperature = state.showerTemperature
 
+
+		if (device.hotWaterSensor && device.boilRequested === true && device.state.targetTemperature <= device.state.Temperature) {
+			log.easyDebug(`"Hot Water" is ready for ${device.deviceName}`)
+			device.boilRequested = false
+			device.SensorService.getCharacteristic(device.SensorCharacteristic).updateValue(1)
+			setTimeout(() => {
+				device.SensorService.getCharacteristic(device.SensorCharacteristic).updateValue(0)
+			}, 5000)
+		}
+
 		// update HomeKit
-		if (device.state.Power === 'OFF' && device.state.fixedTemperature !== 'ON') {
-			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
-			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
-		} else {
+		if (device.state.Power === 'ON') {
 			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(1)
 			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
+		} else if (device.state.fixedTemperature === 'ON') {
+			device.boilRequested = false
+			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
+			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
+		} else {
+			device.boilRequested = false
+			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
+			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
 		}
 		device.ThermostatService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(device.state.Temperature)
 		device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(device.state.targetTemperature || 37)
@@ -50,30 +65,25 @@ module.exports = (device, platform) => {
 		const state = res.Status
 		if (res.Status) {
 			setTimeout(() => {
-				updateDeviceState(state)
+
+				if (state.Power && device.state.Power !== state.Power)
+					device.state.Power = state.Power
+				if (state.Power && device.state.Power !== state.Power)
+					device.state.Power = state.Power
+				if (state.Temperature && device.state.Temperature !== state.Temperature)
+					device.state.Temperature = state.Temperature
+				if (state.targetTemperature && device.state.targetTemperature !== state.targetTemperature)
+					device.state.targetTemperature = state.targetTemperature
+
 				if (state.Power === 'OFF') {
-					device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
+					device.boilRequested = false
 					device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
-				} else {
-					device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(1)
+				} else
 					device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
-				}
+
 				device.ThermostatService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(state.Temperature)
 				if (state.targetTemperature)
 					device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(state.targetTemperature)
-
-				if (device.enableShowerSwitches && device.state.showerTemperature) {
-					for (const switchDrop of Object.keys(device.showerSwitches)) {
-						const dropFound = device.state.showerTemperature.find(shower => shower.drop == switchDrop)
-						if (dropFound) {
-							device.showerSwitches[switchDrop].getCharacteristic(device.dropTemp).updateValue(dropFound.temp)
-							if (state.Temperature >= dropFound.temp)
-								device.showerSwitches[switchDrop].getCharacteristic(Characteristic.On).updateValue(true)
-							else
-								device.showerSwitches[switchDrop].getCharacteristic(Characteristic.On).updateValue(false)
-						}
-					}
-				}
 			}, 1000)
 		}
 	}
@@ -86,61 +96,17 @@ module.exports = (device, platform) => {
 				dolphinApi.getState(device.deviceName)
 					.then(updateDeviceState)
 			},
-
-			// CurrentHeatingCoolingState: () => {
-			// 	return dolphinApi.getState(device.deviceName)
-			// 		.then(state => {
-			// 			updateDeviceState(state)
-			// 			log.easyDebug(`[CurrentHeatingCoolingState] Device ${device.deviceName} is ${state.fixedTemperature || state.Power}`)
-			// 			return ((!state.fixedTemperature || state.fixedTemperature !== 'ON') && state.Power === 'OFF') ? 0 : 1
-			// 		})
-			// },
-
-			// TargetHeatingCoolingState: () => {
-
-			// 	return dolphinApi.getState(device.deviceName)
-			// 		.then(state => {
-			// 			updateDeviceState(state)
-			// 			log.easyDebug(`[TargetHeatingCoolingState] Device ${device.deviceName} is ${state.fixedTemperature || state.Power}`)
-			// 			return ((!state.fixedTemperature || state.fixedTemperature !== 'ON') && state.Power === 'OFF') ? 0 : 1
-			// 		})
-			// },
-
-			// CurrentTemperature: () => {
-			// 	return dolphinApi.getState(device.deviceName)
-			// 		.then(state => {
-			// 			updateDeviceState(state)
-			// 			log.easyDebug(`[TargetHeatingCoolingState] Device ${device.deviceName} Temperature is ${state.Temperature}ºC`)
-			// 			return state.Temperature
-			// 		})
-			// },
-
-			// TargetTemperature: () => {
-			// 	return dolphinApi.getState(device.deviceName)
-			// 		.then(state => {
-			// 			updateDeviceState(state)
-			// 			log.easyDebug(`[TargetTemperature] Device ${device.deviceName} Target Temperature is ${device.state.targetTemperature || 37}ºC`)
-			// 			return device.state.targetTemperature || 37
-			// 		})
-			// },
-
-			// DropTemp: (numberOfShowers) => {
-			// 	const drop = device.state.showerTemperature.find(shower => shower.drop == numberOfShowers)
-			// 	if (drop)
-			// 		return drop.temp
-			// 	else 
-			// 		return new Error('No Drops found')
-			// }
-
 		},
 	
 		set: {
 			TargetHeatingCoolingState: (state) => {
 				if (!state) {
+					device.boilRequested = false
 					log.easyDebug(`Turning OFF Device ${device.deviceName}`)
 					return dolphinApi.turnOff(device.deviceName)
 						.then(updateState)
 				} else {
+					device.boilRequested = true
 					log.easyDebug(`Turning ON Device ${device.deviceName} with Temperature ${device.state.targetTemperature || 37}ºC`)
 					return dolphinApi.setFixedTemperature(device.deviceName, device.state.targetTemperature || 37)
 						.then(updateState)
@@ -148,12 +114,14 @@ module.exports = (device, platform) => {
 			},
 		
 			TargetTemperature: (temp) => {
+				device.boilRequested = true
 				log.easyDebug(`Setting Device ${device.deviceName} with Temperature ${temp}ºC`)
 				return dolphinApi.setFixedTemperature(device.deviceName, temp)
 					.then(updateState)
 			},
 
 			ShowerSwitch: (numberOfShowers) => {
+				device.boilRequested = true
 				log.easyDebug(`Turning ON Device ${device.deviceName} for ${numberOfShowers} Showers`)
 				return dolphinApi.turnOn(device.deviceName, '', numberOfShowers)
 					.then(updateState)

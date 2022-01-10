@@ -1,6 +1,5 @@
 const dolphinApi = require('./dolphin/api')
 const syncHomeKitCache = require('./dolphin/syncHomeKitCache')
-// const refreshState = require('./dolphin/refreshState')
 const path = require('path')
 const storage = require('node-persist')
 const PLUGIN_NAME = 'homebridge-dolphin'
@@ -18,7 +17,6 @@ class dolphinPlatform {
 		this.log = log
 		this.api = api
 		this.storage = storage
-		// this.refreshState = refreshState(this)
 		this.syncHomeKitCache = syncHomeKitCache(this)
 		this.name = PLATFORM_NAME
 		// this.enableHistoryStorage = config['historyStorage'] || false

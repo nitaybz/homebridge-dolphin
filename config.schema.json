@@ -45,6 +45,18 @@
 							"type": "boolean",
 							"default": true,
 							"required": true
+						},
+						"hotWaterSensor": {
+							"title": "Hot Water Sensor",
+							"description": "This sensor will trigger when the water temperature reached the desired/target temperature (only when you turn ON the device from HomeKit)",
+							"type": "string",
+							"required": false,
+							"oneOf": [
+								{ "title": "Occupancy Sensor", "enum": ["OccupancySensor"] },
+								{ "title": "Contact Sensor", "enum": ["ContactSensor"] },
+								{ "title": "Leak Sensor", "enum": ["LeakSensor"] }
+							]
+
 						}
 					}
 				},
@@ -77,7 +89,8 @@
 			"items": [
 				"devices[].serial",
 				"devices[].name",
-				"devices[].enableShowerSwitches"
+				"devices[].enableShowerSwitches",
+				"devices[].hotWaterSensor"
 				]
 		},
 		{
