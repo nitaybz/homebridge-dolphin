@@ -61,31 +61,10 @@ module.exports = (device, platform) => {
 		}
 	}
 
-	const updateState = (res) => {
+	const setUpdate = (res) => {
 		const state = res.Status
-		if (res.Status) {
-			setTimeout(() => {
-
-				if (state.Power && device.state.Power !== state.Power)
-					device.state.Power = state.Power
-				if (state.Power && device.state.Power !== state.Power)
-					device.state.Power = state.Power
-				if (state.Temperature && device.state.Temperature !== state.Temperature)
-					device.state.Temperature = state.Temperature
-				if (state.targetTemperature && device.state.targetTemperature !== state.targetTemperature)
-					device.state.targetTemperature = state.targetTemperature
-
-				if (state.Power === 'OFF') {
-					device.boilRequested = false
-					device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
-				} else
-					device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
-
-				device.ThermostatService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(state.Temperature)
-				if (state.targetTemperature)
-					device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(state.targetTemperature)
-			}, 1000)
-		}
+		if (state)
+			setTimeout(() => updateDeviceState(state), 1000)
 	}
 
 	return {
@@ -104,12 +83,12 @@ module.exports = (device, platform) => {
 					device.boilRequested = false
 					log.easyDebug(`Turning OFF Device ${device.deviceName}`)
 					return dolphinApi.turnOff(device.deviceName)
-						.then(updateState)
+						.then(setUpdate)
 				} else {
 					device.boilRequested = true
 					log.easyDebug(`Turning ON Device ${device.deviceName} with Temperature ${device.state.targetTemperature || 37}ºC`)
 					return dolphinApi.setFixedTemperature(device.deviceName, device.state.targetTemperature || 37)
-						.then(updateState)
+						.then(setUpdate)
 				}
 			},
 		
@@ -117,14 +96,14 @@ module.exports = (device, platform) => {
 				device.boilRequested = true
 				log.easyDebug(`Setting Device ${device.deviceName} with Temperature ${temp}ºC`)
 				return dolphinApi.setFixedTemperature(device.deviceName, temp)
-					.then(updateState)
+					.then(setUpdate)
 			},
 
 			ShowerSwitch: (numberOfShowers) => {
 				device.boilRequested = true
 				log.easyDebug(`Turning ON Device ${device.deviceName} for ${numberOfShowers} Showers`)
 				return dolphinApi.turnOn(device.deviceName, '', numberOfShowers)
-					.then(updateState)
+					.then(setUpdate)
 			}
 		}
 	}

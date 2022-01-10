@@ -60,13 +60,13 @@ class Thermostat {
 		this.addThermostatService()
 
 		this.stateManager.get.refreshState()
-		setInterval(this.stateManager.get.refreshState, 90000)
+		setInterval(this.stateManager.get.refreshState, 30000)
 
 		if (this.enableShowerSwitches) {
 			this.dropsInterval = setInterval(() => {
 				if (this.state.showerTemperature && this.state.showerTemperature.length) {
 					this.refreshDrops()
-					setInterval(this.refreshDrops.bind(this), 60000)
+					setInterval(this.refreshDrops.bind(this), 30000)
 					clearInterval(this.dropsInterval)
 				}
 			}, 5000)
