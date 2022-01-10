@@ -6,7 +6,7 @@ module.exports = (hap) => {
 				format: hap.Formats.FLOAT,
 				unit: hap.Units.CELSIUS,
 				minValue: 37,
-				maxValue: 70,
+				maxValue: 80,
 				minStep: 1,
 				perms: [hap.Perms.PAIRED_READ, hap.Perms.NOTIFY]
 			});

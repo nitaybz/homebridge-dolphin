@@ -110,7 +110,7 @@ class Thermostat {
 		this.ThermostatService.getCharacteristic(Characteristic.TargetTemperature)
 			.setProps({
 				minValue: 37,
-				maxValue: 70,
+				maxValue: 80,
 				minStep: 1
 			})
 			.onSet(this.stateManager.set.TargetTemperature)
