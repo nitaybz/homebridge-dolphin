@@ -74,6 +74,10 @@ module.exports = (device, platform) => {
 			refreshState: () => {
 				dolphinApi.getState(device.deviceName)
 					.then(updateDeviceState)
+					.catch(err => {
+						log.error('The plugin could not refresh the status - ERROR OCCURRED:')
+						log.error(err.message || err.stack)
+					})
 			},
 		},
 	
@@ -84,11 +88,19 @@ module.exports = (device, platform) => {
 					log.easyDebug(`Turning OFF Device ${device.deviceName}`)
 					return dolphinApi.turnOff(device.deviceName)
 						.then(setUpdate)
+						.catch(err => {
+							log.error('The plugin could not set the state - ERROR OCCURRED:')
+							log.error(err.message || err.stack)
+						})
 				} else {
 					device.boilRequested = true
 					log.easyDebug(`Turning ON Device ${device.deviceName} with Temperature ${device.state.targetTemperature || 37}ºC`)
 					return dolphinApi.setFixedTemperature(device.deviceName, device.state.targetTemperature || 37)
 						.then(setUpdate)
+						.catch(err => {
+							log.error('The plugin could not set the state - ERROR OCCURRED:')
+							log.error(err.message || err.stack)
+						})
 				}
 			},
 		
@@ -97,6 +109,10 @@ module.exports = (device, platform) => {
 				log.easyDebug(`Setting Device ${device.deviceName} with Temperature ${temp}ºC`)
 				return dolphinApi.setFixedTemperature(device.deviceName, temp)
 					.then(setUpdate)
+					.catch(err => {
+						log.error('The plugin could not set the state - ERROR OCCURRED:')
+						log.error(err.message || err.stack)
+					})
 			},
 
 			ShowerSwitch: (numberOfShowers) => {
@@ -104,6 +120,10 @@ module.exports = (device, platform) => {
 				log.easyDebug(`Turning ON Device ${device.deviceName} for ${numberOfShowers} Showers`)
 				return dolphinApi.turnOn(device.deviceName, '', numberOfShowers)
 					.then(setUpdate)
+					.catch(err => {
+						log.error('The plugin could not set the state - ERROR OCCURRED:')
+						log.error(err.message || err.stack)
+					})
 			}
 		}
 	}
