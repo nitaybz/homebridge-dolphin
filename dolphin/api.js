@@ -177,18 +177,20 @@ module.exports = function (platform) {
 }
 
 const axiosRequest = (config) => {
-	return axios(config)
-		.then(function (response) {
-			const res = response
-			if (res.error) {
-				log(res.error)
-				throw res.error
-			}
-			log.easyDebug('Response:', JSON.stringify(res.data))
-			return res.data
-		})
-		.catch(function (error) {
-			log(error)
-			throw error
-		});
+	return new Promise((resolve, reject) => {
+		axios(config)
+			.then(function (response) {
+				const res = response
+				if (res.error) {
+					log(res.error)
+					reject(res.error)
+				}
+				log.easyDebug('Response:', JSON.stringify(res.data))
+				resolve(res.data)
+			})
+			.catch(function (error) {
+				log(error)
+				reject(error)
+			})
+	})
 }
