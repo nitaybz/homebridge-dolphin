@@ -189,6 +189,8 @@ const axiosRequest = (config) => {
 				resolve(res.data)
 			})
 			.catch(function (error) {
+				if (error.response.status == 500)
+					error = 'ERROR - Device Not Found! (might be disconnected)'
 				log(error)
 				reject(error)
 			})
