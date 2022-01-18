@@ -62,6 +62,13 @@
 				},
 				"required": true
 			},
+			"enableHistoryStorage": {
+				"title": "Enable History Storage",
+				"description": "Records all temperature history to be viewable in the Eve app",
+				"type": "boolean",
+				"default": false,
+				"required": false
+		},
 			"debug": {
 				"title": "Enable Debug Logs",
 				"description": "When checked, the plugin will produce extra logs for debugging purposes",
@@ -92,6 +99,9 @@
 				"devices[].enableShowerSwitches",
 				"devices[].hotWaterSensor"
 				]
+		},
+		{
+			"key": "enableHistoryStorage"
 		},
 		{
 			"key": "debug"

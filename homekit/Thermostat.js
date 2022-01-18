@@ -37,12 +37,6 @@ class Thermostat {
 			// register the accessory
 			this.api.registerPlatformAccessories(platform.PLUGIN_NAME, platform.PLATFORM_NAME, [this.accessory])
 		}
-
-		if (platform.enableHistoryStorage) {
-			const FakeGatoHistoryService = require('fakegato-history')(this.api)
-			this.loggingService = new FakeGatoHistoryService('weather', this.accessory, { storage: 'fs', path: platform.persistPath })
-		}
-
 		this.state = this.accessory.context.state
 
 		this.stateManager = require('./StateManager')(this, platform)
@@ -78,6 +72,17 @@ class Thermostat {
 		else
 			this.removeSensorService()
 
+
+
+		if (platform.enableHistoryStorage) {
+			this.accessory.log = this.log;
+			this.loggingService = new platform.FakeGatoHistoryService('custom', this.accessory, { size: 20160, disableTimer:true, storage: 'fs', path: platform.persistPath })
+
+			let loggingServices = this.accessory.getService(this.loggingService)
+			if (!loggingServices)
+				this.accessory.addService(this.loggingService)
+		}
+
 	}
 
 	addThermostatService() {
@@ -88,6 +93,8 @@ class Thermostat {
 
 		this.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
 
+		this.ThermostatService.getCharacteristic(Characteristic.TemperatureDisplayUnits)
+			.updateValue(0)
 
 		const props = [Characteristic.TargetHeatingCoolingState.OFF, Characteristic.TargetHeatingCoolingState.HEAT]
 	

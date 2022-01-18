@@ -19,10 +19,13 @@ class dolphinPlatform {
 		this.storage = storage
 		this.syncHomeKitCache = syncHomeKitCache(this)
 		this.name = PLATFORM_NAME
-		// this.enableHistoryStorage = config['historyStorage'] || false
+		this.enableHistoryStorage = config['historyStorage'] || false
 		this.debug = config['debug'] || false
 		this.PLUGIN_NAME = PLUGIN_NAME
 		this.PLATFORM_NAME = PLATFORM_NAME
+
+		if (this.enableHistoryStorage)
+			this.FakeGatoHistoryService = require('fakegato-history')(this.api)
 
 		
 		this.email = config['email']
@@ -38,17 +41,8 @@ class dolphinPlatform {
 
 		this.persistPath = path.join(this.api.user.persistPath(), '/../dolphin-persist')
 		this.emptyState = {devices:{}}
-		// const requestedInterval = config['statePollingInterval'] === 0 ? 0 : (config['statePollingInterval'] || 30) // default polling time is 30 seconds
-		// this.refreshDelay = 2000
 		
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-		// this.setProcessing = false
-		// this.pollingTimeout = null
-		// this.processingState = false
-		// this.refreshTimeout = null
-		// this.pollingInterval = requestedInterval ? (requestedInterval * 1000 - this.refreshDelay) : false
-
 		// define debug method to output debug logs when enabled in the config
 		this.log.easyDebug = (...content) => {
 			if (this.debug) {
@@ -62,10 +56,6 @@ class dolphinPlatform {
 		}
 		
 		this.api.on('didFinishLaunching', async () => {
-			// if (this.pollingInterval)
-			// 	this.pollingTimeout = setTimeout(this.refreshState.ac, this.pollingInterval)
-			
-			
 			this.dolphinApi = dolphinApi(this)
 			this.syncHomeKitCache()
 
