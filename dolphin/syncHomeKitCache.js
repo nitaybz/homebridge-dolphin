@@ -3,7 +3,8 @@ const Thermostat = require('../homekit/Thermostat')
 module.exports = (platform) => {
 	return () => {
 		platform.devices.forEach(device => {
-			new Thermostat(device, platform)
+			if (device.deviceName)
+				new Thermostat(device, platform)
 		})
 
 		// find devices to remove
