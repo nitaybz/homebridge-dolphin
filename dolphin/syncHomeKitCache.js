@@ -3,7 +3,7 @@ const Thermostat = require('../homekit/Thermostat')
 module.exports = (platform) => {
 	return () => {
 		platform.devices.forEach(device => {
-			if (device.deviceName)
+			if (device.serial)
 				new Thermostat(device, platform)
 		})
 
