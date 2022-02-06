@@ -86,7 +86,7 @@ module.exports = (device, platform) => {
 					.then(updateDeviceState)
 					.catch(err => {
 						log.error('The plugin could not refresh the status - ERROR OCCURRED:')
-						log.error(err.message || err.stack)
+						log.error(err.message || err.stack || err)
 					})
 			},
 		},

@@ -2,6 +2,7 @@ const axios = require('axios');
 const FormData = require('form-data');
 
 let log, token
+const REQUEST_TIMEOUT = 10000
 
 module.exports = function (platform) {
 	log = platform.log
@@ -81,9 +82,7 @@ module.exports = function (platform) {
 							reject(error)
 						})
 						.finally(() => {
-							setTimeout(() => {
-								statePromise = null
-							}, 3000)
+							statePromise = null
 						})
 
 				})
@@ -178,6 +177,7 @@ module.exports = function (platform) {
 
 const axiosRequest = (config) => {
 	return new Promise((resolve, reject) => {
+		config.timeout = REQUEST_TIMEOUT
 		axios(config)
 			.then(function (response) {
 				const res = response
@@ -189,8 +189,14 @@ const axiosRequest = (config) => {
 				resolve(res.data)
 			})
 			.catch(function (error) {
-				log(error)
-				reject(error)
+				try {
+					const errMessage = error.toJSON().message
+					log(errMessage)
+					reject(errMessage)
+				} catch(err) {
+					log(error)
+					reject(error)
+				}
 			})
 	})
 }
