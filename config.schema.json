@@ -66,7 +66,7 @@
 				"title": "Enable History Storage",
 				"description": "Records all temperature history to be viewable in the Eve app",
 				"type": "boolean",
-				"default": false,
+				"default": true,
 				"required": false
 		},
 			"debug": {
