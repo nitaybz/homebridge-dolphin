@@ -35,33 +35,34 @@ module.exports = (device, platform) => {
 		if (device.state.Power === 'ON') {
 			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(1)
 			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
-			if (device.loggingService)
-				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), status: 1})
-		} else if (device.state.fixedTemperature === 'ON') {
-			device.boilRequested = false
-			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
-			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
-			if (device.loggingService)
-				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), status: 1})
+			device.ThermostatService.getCharacteristic(device.customCharacteristic.ValvePosition).updateValue(100)
+			if (device.loggingService) {
+				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature || 37, valvePosition: 100})
+				device.ThermostatService.getCharacteristic(device.customCharacteristic.ValvePosition).updateValue(100)
+			}
 		} else {
+			if (device.state.fixedTemperature === 'ON')
+				device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
+			else
+				device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
+
 			device.boilRequested = false
 			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
-			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(0)
-			if (device.loggingService)
-				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), status: 0})
+			if (device.loggingService) {
+				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature || 37, valvePosition: 0})
+				device.ThermostatService.getCharacteristic(device.customCharacteristic.ValvePosition).updateValue(0)
+			}
 		}
+
 		device.ThermostatService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(device.state.Temperature)
 		device.ThermostatService.getCharacteristic(Characteristic.TargetTemperature).updateValue(device.state.targetTemperature || 37)
 
-
-		if (device.loggingService)
-			device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), temp: device.state.Temperature})
 
 		if (device.enableShowerSwitches && state.showerTemperature) {
 			for (const switchDrop of Object.keys(device.showerSwitches)) {
 				const dropFound = state.showerTemperature.find(shower => shower.drop == switchDrop)
 				if (dropFound) {
-					device.showerSwitches[switchDrop].getCharacteristic(device.dropTemp).updateValue(dropFound.temp)
+					device.showerSwitches[switchDrop].getCharacteristic(device.customCharacteristic.DropTemp).updateValue(dropFound.temp)
 					if (state.Temperature >= dropFound.temp)
 						device.showerSwitches[switchDrop].getCharacteristic(Characteristic.On).updateValue(true)
 					else

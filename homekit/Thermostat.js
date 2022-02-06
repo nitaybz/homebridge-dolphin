@@ -5,10 +5,10 @@ class Thermostat {
 
 		Service = platform.api.hap.Service
 		Characteristic = platform.api.hap.Characteristic
-
-		this.dropTemp = require('./dropTemp')(platform.api.hap)
+		this.customCharacteristic = require('./customCharacteristic')(platform.api.hap)
 
 		this.enableShowerSwitches = device.enableShowerSwitches
+		this.enableHistoryStorage = platform.enableHistoryStorage
 		this.hotWaterSensor = device.hotWaterSensor
 		this.deviceName = device.serial
 		this.log = platform.log
@@ -25,7 +25,6 @@ class Thermostat {
 
 		this.UUID = this.api.hap.uuid.generate(this.id.toString())
 		this.accessory = platform.cachedAccessories.find(accessory => accessory.UUID === this.UUID)
-
 
 		if (!this.accessory) {
 			this.log(`Creating New ${platform.PLATFORM_NAME} Accessory (${this.name})`)
@@ -74,13 +73,10 @@ class Thermostat {
 
 
 
-		if (platform.enableHistoryStorage) {
+		if (this.enableHistoryStorage) {
+			this.log('Starting FakeGato History Service...')
 			this.accessory.log = this.log;
-			this.loggingService = new platform.FakeGatoHistoryService('custom', this.accessory, { size: 20160, disableTimer:true, storage: 'fs', path: platform.persistPath })
-
-			let loggingServices = this.accessory.getService(this.loggingService)
-			if (!loggingServices)
-				this.accessory.addService(this.loggingService)
+			this.loggingService = new platform.FakeGatoHistoryService('thermo', this.accessory, { size: 20160, disableTimer:true, storage: 'fs', path: platform.persistPath })
 		}
 
 	}
@@ -122,6 +118,22 @@ class Thermostat {
 			})
 			.onSet(this.stateManager.set.TargetTemperature)
 
+		if (this.enableHistoryStorage) {
+			this.log.easyDebug('Starting optional Characteristics for History...')
+			let ValvePositionCharacteristic = this.ThermostatService.getCharacteristic(this.customCharacteristic.ValvePosition)
+			if (!ValvePositionCharacteristic)
+				ValvePositionCharacteristic = this.ThermostatService.addCharacteristic(this.customCharacteristic.ValvePosition)
+
+			this.ThermostatService.addOptionalCharacteristic(this.customCharacteristic.ValvePosition)
+			this.ThermostatService.getCharacteristic(this.customCharacteristic.ValvePosition)
+			this.ThermostatService.addOptionalCharacteristic(this.customCharacteristic.ProgramCommand)
+			this.ThermostatService.getCharacteristic(this.customCharacteristic.ProgramCommand)
+			this.ThermostatService.addOptionalCharacteristic(this.customCharacteristic.ProgramData)
+			this.ThermostatService.getCharacteristic(this.customCharacteristic.ProgramData)
+				.updateValue(Buffer.from('ff04f6', 'hex').toString('base64'))
+		}
+			
+
 	}
 
 	// removeThermostatService() {
@@ -149,11 +161,11 @@ class Thermostat {
 			})
 				
 		
-		this.showerSwitches[numberOfShowers].addOptionalCharacteristic(this.dropTemp)
+		this.showerSwitches[numberOfShowers].addOptionalCharacteristic(this.customCharacteristic.DropTemp)
 		if (this.state.showerTemperature)
-			this.showerSwitches[numberOfShowers].getCharacteristic(this.dropTemp).updateValue(this.state.showerTemperature.find(shower => shower.drop == numberOfShowers).temp)
+			this.showerSwitches[numberOfShowers].getCharacteristic(this.customCharacteristic.DropTemp).updateValue(this.state.showerTemperature.find(shower => shower.drop == numberOfShowers).temp)
 		else
-			this.showerSwitches[numberOfShowers].getCharacteristic(this.dropTemp).updateValue(37)
+			this.showerSwitches[numberOfShowers].getCharacteristic(this.customCharacteristic.DropTemp).updateValue(37)
 
 	}
 

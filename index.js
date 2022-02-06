@@ -19,7 +19,7 @@ class dolphinPlatform {
 		this.storage = storage
 		this.syncHomeKitCache = syncHomeKitCache(this)
 		this.name = PLATFORM_NAME
-		this.enableHistoryStorage = config['historyStorage'] || false
+		this.enableHistoryStorage = config['enableHistoryStorage'] || false
 		this.debug = config['debug'] || false
 		this.PLUGIN_NAME = PLUGIN_NAME
 		this.PLATFORM_NAME = PLATFORM_NAME
