@@ -120,10 +120,6 @@ class Thermostat {
 
 		if (this.enableHistoryStorage) {
 			this.log.easyDebug('Starting optional Characteristics for History...')
-			let ValvePositionCharacteristic = this.ThermostatService.getCharacteristic(this.customCharacteristic.ValvePosition)
-			if (!ValvePositionCharacteristic)
-				ValvePositionCharacteristic = this.ThermostatService.addCharacteristic(this.customCharacteristic.ValvePosition)
-
 			this.ThermostatService.addOptionalCharacteristic(this.customCharacteristic.ValvePosition)
 			this.ThermostatService.getCharacteristic(this.customCharacteristic.ValvePosition)
 			this.ThermostatService.addOptionalCharacteristic(this.customCharacteristic.ProgramCommand)

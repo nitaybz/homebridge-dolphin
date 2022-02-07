@@ -37,7 +37,7 @@ module.exports = (device, platform) => {
 			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
 			device.ThermostatService.getCharacteristic(device.customCharacteristic.ValvePosition).updateValue(100)
 			if (device.loggingService) {
-				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature || 37, valvePosition: 100})
+				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature, valvePosition: 100})
 				device.ThermostatService.getCharacteristic(device.customCharacteristic.ValvePosition).updateValue(100)
 			}
 		} else {
@@ -49,7 +49,7 @@ module.exports = (device, platform) => {
 			device.boilRequested = false
 			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
 			if (device.loggingService) {
-				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature || 37, valvePosition: 0})
+				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature, valvePosition: 0})
 				device.ThermostatService.getCharacteristic(device.customCharacteristic.ValvePosition).updateValue(0)
 			}
 		}
