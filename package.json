@@ -1,6 +1,6 @@
 {
   "name": "homebridge-dolphin",
-  "version": "0.4.0-beta.3",
+  "version": "0.5.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/nitaybz/homebridge-dolphin.git"
