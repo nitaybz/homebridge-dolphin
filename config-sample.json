@@ -17,10 +17,12 @@
           "serial": "YFUY323DG43",
           "name": "Dolphin Boiler",
           "enableShowerSwitches": true,
-          "enableHistoryStorage": true,
+          "connectionSensor": true,
           "hotWaterSensor": "OccupancySensor"
         }
-      ]
+      ],
+      "enableHistoryStorage": true,
+      "debug": true
     }
   ],
 

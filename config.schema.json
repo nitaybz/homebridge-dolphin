@@ -56,7 +56,13 @@
 								{ "title": "Contact Sensor", "enum": ["ContactSensor"] },
 								{ "title": "Leak Sensor", "enum": ["LeakSensor"] }
 							]
-
+						},
+						"connectionSensor": {
+							"title": "Enable Connection Sensor",
+							"description": "This sensor will show \"Open\" when the connection is working and \"Close\" when the connection is closed and there is not response from the device",
+							"type": "boolean",
+							"default": false,
+							"required": false
 						}
 					}
 				},
@@ -97,7 +103,8 @@
 				"devices[].serial",
 				"devices[].name",
 				"devices[].enableShowerSwitches",
-				"devices[].hotWaterSensor"
+				"devices[].hotWaterSensor",
+				"devices[].connectionSensor"
 				]
 		},
 		{

@@ -10,6 +10,7 @@ class Thermostat {
 		this.enableShowerSwitches = device.enableShowerSwitches
 		this.enableHistoryStorage = platform.enableHistoryStorage
 		this.hotWaterSensor = device.hotWaterSensor
+		this.connectionSensor = device.connectionSensor
 		this.deviceName = device.serial
 		this.log = platform.log
 		this.api = platform.api
@@ -66,10 +67,15 @@ class Thermostat {
 			this.removeDrops()
 
 		if (this.hotWaterSensor)
-			this.addSensorService(this.hotWaterSensor)
+			this.addHotWaterSensorService(this.hotWaterSensor)
 		else
-			this.removeSensorService()
+			this.removeHotWaterSensorService()
 
+		if (this.connectionSensor)
+			this.addConnectionSensorService()
+		else
+			this.removeConnectionSensorService()
+		
 
 
 		if (this.enableHistoryStorage) {
@@ -174,7 +180,7 @@ class Thermostat {
 	}
 
 
-	addSensorService(sensorType) {
+	addHotWaterSensorService(sensorType) {
 
 		const sensorTypes = ['LeakSensor', 'ContactSensor', 'OccupancySensor']
 
@@ -218,13 +224,44 @@ class Thermostat {
 
 	}
 
-	removeSensorService() {
+	removeHotWaterSensorService() {
 		let sensor = this.accessory.getService('Hot Water')
 		if (sensor) {
 			// remove service
 			this.accessory.removeService(sensor)
 		}
 	}
+
+	
+	addConnectionSensorService(sensorType) {
+
+		const sensorTypes = ['LeakSensor', 'ContactSensor', 'OccupancySensor']
+
+		if (!sensorTypes.includes(sensorType)) {
+			this.log.error('Wrong Sensor Type - NOT ADDING SENSOR')
+			return
+		}
+
+		const name = 'Dolphin Connection'
+		this.log.easyDebug(`Adding "${name}" ${sensorType} Service for Dolphin device (${this.deviceName})`)
+
+		this.ConnectionSensorService = this.accessory.getService(name)
+		if (!this.ConnectionSensorService)
+			this.ConnectionSensorService = this.accessory.addService(Service[sensorType], name, name + this.deviceName)
+
+		this.ConnectionSensorService.getCharacteristic(Characteristic.ContactSensorState)
+			.updateValue(1)
+				
+	}
+
+	removeConnectionSensorService() {
+		let sensor = this.accessory.getService('Dolphin Connection')
+		if (sensor) {
+			// remove service
+			this.accessory.removeService(sensor)
+		}
+	}
+
 
 	refreshDrops() {
 		if (this.state && this.state.showerTemperature && this.state.showerTemperature.length) {

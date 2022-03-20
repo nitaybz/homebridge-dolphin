@@ -34,6 +34,9 @@ module.exports = (device, platform) => {
 			}, 5000)
 		}
 
+		if (device.ConnectionSensorService)
+			device.ConnectionSensorService.getCharacteristic(Characteristic.ContactSensorState).updateValue(0)
+
 		// update HomeKit
 		if (device.state.Power === 'ON') {
 			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(1)
@@ -97,6 +100,9 @@ module.exports = (device, platform) => {
 						if (device.enableShowerSwitches)
 							for (const switchDrop of Object.keys(device.showerSwitches))
 								device.showerSwitches[switchDrop].getCharacteristic(Characteristic.On).updateValue(HapError())
+
+						if (device.ConnectionSensorService)
+							device.ConnectionSensorService.getCharacteristic(Characteristic.ContactSensorState).updateValue(0)
 					})
 			},
 		},

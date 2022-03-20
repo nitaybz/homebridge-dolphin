@@ -33,16 +33,20 @@ If you don't use Homebridge UI or HOOBS, or if you want to know more about the p
 ``` json
 "platforms": [
     {
-        "platform": "Dolphin",
-        "email": "user@name.com",
-        "password": "*************",
-        "devices": [
-            {
-            "serial": "YFUY323DG43",
-            "name": "Dolphin Boiler",
-            "enableShowerSwitches": true
-            }
-        ]
+      "platform": "Dolphin",
+      "email": "user@name.com",
+      "password": "*************",
+      "devices": [
+        {
+          "serial": "YFUY323DG43",
+          "name": "Dolphin Boiler",
+          "enableShowerSwitches": true,
+          "connectionSensor": true,
+          "hotWaterSensor": "OccupancySensor"
+        }
+      ],
+      "enableHistoryStorage": true,
+      "debug": true
     }
 ]
 ```
