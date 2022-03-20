@@ -35,7 +35,7 @@ module.exports = (device, platform) => {
 		}
 
 		if (device.ConnectionSensorService)
-			device.ConnectionSensorService.getCharacteristic(Characteristic.ContactSensorState).updateValue(0)
+			device.ConnectionSensorService.getCharacteristic(Characteristic.ContactSensorState).updateValue(1)
 
 		// update HomeKit
 		if (device.state.Power === 'ON') {

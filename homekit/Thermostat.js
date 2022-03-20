@@ -233,14 +233,14 @@ class Thermostat {
 	}
 
 	
-	addConnectionSensorService(sensorType) {
+	addConnectionSensorService() {
 
 		const name = 'Dolphin Connection'
 		this.log.easyDebug(`Adding "${name}" Contact Sensor Service for Dolphin device (${this.deviceName})`)
 
 		this.ConnectionSensorService = this.accessory.getService(name)
 		if (!this.ConnectionSensorService)
-			this.ConnectionSensorService = this.accessory.addService(Service[sensorType], name, name + this.deviceName)
+			this.ConnectionSensorService = this.accessory.addService(Service.ContactSensor, name, name + this.deviceName)
 
 		this.ConnectionSensorService.getCharacteristic(Characteristic.ContactSensorState)
 			.updateValue(1)
