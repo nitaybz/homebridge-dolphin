@@ -235,15 +235,8 @@ class Thermostat {
 	
 	addConnectionSensorService(sensorType) {
 
-		const sensorTypes = ['LeakSensor', 'ContactSensor', 'OccupancySensor']
-
-		if (!sensorTypes.includes(sensorType)) {
-			this.log.error('Wrong Sensor Type - NOT ADDING SENSOR')
-			return
-		}
-
 		const name = 'Dolphin Connection'
-		this.log.easyDebug(`Adding "${name}" ${sensorType} Service for Dolphin device (${this.deviceName})`)
+		this.log.easyDebug(`Adding "${name}" Contact Sensor Service for Dolphin device (${this.deviceName})`)
 
 		this.ConnectionSensorService = this.accessory.getService(name)
 		if (!this.ConnectionSensorService)
