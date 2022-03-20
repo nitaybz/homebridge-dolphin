@@ -1,9 +1,9 @@
 const dolphinApi = require('./dolphin/api')
 const syncHomeKitCache = require('./dolphin/syncHomeKitCache')
 const path = require('path')
-const storage = require('node-persist')
 const PLUGIN_NAME = 'homebridge-dolphin'
 const PLATFORM_NAME = 'Dolphin'
+var fs = require('fs');
 
 module.exports = (api) => {
 	api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, dolphinPlatform)
@@ -16,7 +16,6 @@ class dolphinPlatform {
 		this.activeAccessories = []
 		this.log = log
 		this.api = api
-		this.storage = storage
 		this.syncHomeKitCache = syncHomeKitCache(this)
 		this.name = PLATFORM_NAME
 		this.enableHistoryStorage = config['enableHistoryStorage'] || false
@@ -40,6 +39,10 @@ class dolphinPlatform {
 		}
 
 		this.persistPath = path.join(this.api.user.persistPath(), '/../dolphin-persist')
+		if (!fs.existsSync(this.persistPath)){
+			fs.mkdirSync(this.persistPath);
+		}
+
 		this.emptyState = {devices:{}}
 		
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //

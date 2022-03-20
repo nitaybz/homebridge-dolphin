@@ -13,7 +13,6 @@ class Thermostat {
 		this.deviceName = device.serial
 		this.log = platform.log
 		this.api = platform.api
-		this.storage = platform.storage
 		this.id = this.deviceName
 		this.model = 'Homebridge-Dolphin'
 		this.serial = this.deviceName

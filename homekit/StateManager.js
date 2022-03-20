@@ -2,6 +2,9 @@ module.exports = (device, platform) => {
 	const Characteristic = platform.api.hap.Characteristic
 	const log = platform.log
 	const dolphinApi = platform.dolphinApi
+	const HapError = () => {
+		return new platform.api.hap.HapStatusError(-70402)
+	}
 
 	const updateDeviceState = (state) => {
 
@@ -88,6 +91,12 @@ module.exports = (device, platform) => {
 					.catch(err => {
 						log.error('The plugin could not refresh the status - ERROR OCCURRED:')
 						log.error(err.message || err.stack || err)
+						device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(HapError())
+						if (device.SensorService)
+							device.ThermostatService.getCharacteristic(device.SensorCharacteristic).updateValue(HapError())
+						if (device.enableShowerSwitches)
+							for (const switchDrop of Object.keys(device.showerSwitches))
+								device.showerSwitches[switchDrop].getCharacteristic(Characteristic.On).updateValue(HapError())
 					})
 			},
 		},
