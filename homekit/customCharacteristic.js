@@ -18,7 +18,7 @@ module.exports = (hap) => {
 
 	class ShowersToday extends hap.Characteristic {
 		constructor() {
-			super('Showers Today', DropTemp.UUID);
+			super('Showers Today', ShowersToday.UUID);
 			this.setProps({
 				format: hap.Formats.INT,
 				minValue: 0,
@@ -30,7 +30,7 @@ module.exports = (hap) => {
 		}
 	}
 	
-	ShowersToday.amountOfShowers = '000000CE-0000-1000-8000-0026ABCDEF02'
+	ShowersToday.UUID = '000000CE-0000-1000-8000-0026ABCDEF02'
 
 	// EVE 
 
@@ -71,5 +71,5 @@ module.exports = (hap) => {
 	}
 	ValvePosition.UUID = 'E863F12E-079E-48FF-8F27-9C2605A29F52';
 	
-	return {DropTemp, ProgramData, ProgramCommand, ValvePosition}
+	return {DropTemp, ProgramData, ProgramCommand, ValvePosition, ShowersToday} 
 }

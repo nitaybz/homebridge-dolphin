@@ -183,50 +183,46 @@ module.exports = function (platform) {
 				throw err
 			}
 			
-			if (!statePromise) {
-				statePromise = new Promise((resolve, reject) => {
+			return new Promise((resolve, reject) => {
 
-					const hourNow = new Date().getHours()
-					let startDateTime = new Date(new Date().setHours(resetHour,0,0,0))
-					let endDateTime = new Date(new Date().setHours(resetHour + 24,0,0,0))
-					if (hourNow < resetHour) {
-						startDateTime = new Date(new Date().setHours(resetHour - 24,0,0,0))
-						endDateTime = new Date(new Date().setHours(resetHour,0,0,0))
-					}
-					startDateTime = toLocalISOString(startDateTime)
-					endDateTime = toLocalISOString(endDateTime)
+				const hourNow = new Date().getHours()
+				let startDateTime = new Date(new Date().setHours(resetHour,0,0,0))
+				let endDateTime = new Date(new Date().setHours(resetHour + 24,0,0,0))
+				if (hourNow < resetHour) {
+					startDateTime = new Date(new Date().setHours(resetHour - 24,0,0,0))
+					endDateTime = new Date(new Date().setHours(resetHour,0,0,0))
+				}
+				startDateTime = toLocalISOString(startDateTime)
+				endDateTime = toLocalISOString(endDateTime)
 					
-					let data = new FormData();
-					data.append('deviceName', deviceName);
-					data.append('email', platform.email);
-					data.append('secretKey', secretKey);
-					data.append('startDateTime', startDateTime);
-					data.append('endDateTime', endDateTime);
+				let data = new FormData();
+				data.append('deviceName', deviceName);
+				data.append('email', platform.email);
+				data.append('secretKey', secretKey);
+				data.append('startDateTime', startDateTime);
+				data.append('endDateTime', endDateTime);
 					
-					const config = {
-						method: 'post',
-						url: 'https://api.dolphinboiler.com/V2/getAmountOfShowers.php',
-						headers: { 
-							...data.getHeaders()
-						},
-						data : data
-					};
+				const config = {
+					method: 'post',
+					url: 'https://api.dolphinboiler.com/V2/getAmountOfShowers.php',
+					headers: { 
+						...data.getHeaders()
+					},
+					data : data
+				};
 
-					axiosRequest(config)
-						.then(response => {
-							resolve(response)
-						})
-						.catch(error => {
-							reject(error)
-						})
-						.finally(() => {
-							statePromise = null
-						})
+				axiosRequest(config)
+					.then(response => {
+						resolve(response)
+					})
+					.catch(error => {
+						reject(error)
+					})
+					.finally(() => {
+						statePromise = null
+					})
 
-				})
-			}
-			return statePromise
-
+			})
 		}
 	}
 }

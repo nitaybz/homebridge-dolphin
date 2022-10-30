@@ -110,6 +110,7 @@ module.exports = (device, platform) => {
 			refreshShowersToday: () => {
 				dolphinApi.getAmountOfShowers(device.deviceName, device.resetHour)
 					.then(state => {
+						log.easyDebug(`Updating new "Showers Today" Value (${state.totalShowers}) for ${device.deviceName}`)
 						device.ThermostatService.getCharacteristic(device.customCharacteristic.ShowersToday).updateValue(state.totalShowers)
 					})
 					.catch(err => {
