@@ -18,7 +18,8 @@
           "name": "Dolphin Boiler",
           "enableShowerSwitches": true,
           "connectionSensor": true,
-          "hotWaterSensor": "OccupancySensor"
+          "hotWaterSensor": "OccupancySensor",
+          "showersTodayResetHour": 0
         }
       ],
       "enableHistoryStorage": true,

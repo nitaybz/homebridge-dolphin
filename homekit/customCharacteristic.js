@@ -16,6 +16,22 @@ module.exports = (hap) => {
 
 	DropTemp.UUID = '000000CE-0000-1000-8000-0026ABCDEF01'
 
+	class ShowersToday extends hap.Characteristic {
+		constructor() {
+			super('Showers Today', DropTemp.UUID);
+			this.setProps({
+				format: hap.Formats.INT,
+				minValue: 0,
+				maxValue: 10,
+				minStep: 1,
+				perms: [hap.Perms.PAIRED_READ, hap.Perms.NOTIFY]
+			});
+			this.value = this.getDefaultValue()
+		}
+	}
+	
+	ShowersToday.amountOfShowers = '000000CE-0000-1000-8000-0026ABCDEF02'
+
 	// EVE 
 
 

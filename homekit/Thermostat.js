@@ -12,6 +12,7 @@ class Thermostat {
 		this.hotWaterSensor = device.hotWaterSensor
 		this.connectionSensor = device.connectionSensor
 		this.deviceName = device.serial
+		this.resetHour = device.showersTodayResetHour || 0
 		this.log = platform.log
 		this.api = platform.api
 		this.id = this.deviceName
@@ -54,6 +55,9 @@ class Thermostat {
 
 		this.stateManager.get.refreshState()
 		setInterval(this.stateManager.get.refreshState, 30000)
+
+		this.stateManager.get.refreshShowersToday()
+		setInterval(this.stateManager.get.refreshShowersToday, 300000)
 
 		if (this.enableShowerSwitches) {
 			this.dropsInterval = setInterval(() => {
@@ -133,8 +137,12 @@ class Thermostat {
 			this.ThermostatService.getCharacteristic(this.customCharacteristic.ProgramData)
 				.updateValue(Buffer.from('ff04f6', 'hex').toString('base64'))
 		}
-			
 
+		// add "Showers Today" Sensor
+		this.log.easyDebug('Adding "Showers Today" Sensor...')
+		this.ThermostatService.addOptionalCharacteristic(this.customCharacteristic.ShowersToday)
+		this.ThermostatService.getCharacteristic(this.customCharacteristic.ShowersToday)
+			.updateValue(0)
 	}
 
 	// removeThermostatService() {

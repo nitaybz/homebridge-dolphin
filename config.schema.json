@@ -63,6 +63,15 @@
 							"type": "boolean",
 							"default": false,
 							"required": false
+						},
+						"showersTodayResetHour": {
+							"title": "\"Showers Today\" Reset Hour",
+							"description": "The hour of day (0-23) at which the showers count should be reset (this sensor available only from 3rd party apps like Eve)",
+							"type": "integer",
+							"default": 0,
+							"minimum": 0,
+							"maximum": 23,
+							"required": true
 						}
 					}
 				},
@@ -104,7 +113,8 @@
 				"devices[].name",
 				"devices[].enableShowerSwitches",
 				"devices[].hotWaterSensor",
-				"devices[].connectionSensor"
+				"devices[].connectionSensor",
+				"devices[].showersTodayResetHour"
 				]
 		},
 		{

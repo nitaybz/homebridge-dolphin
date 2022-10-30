@@ -55,7 +55,8 @@ module.exports = (device, platform) => {
 			device.boilRequested = false
 			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
 			if (device.loggingService) {
-				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature, valvePosition: 0})
+				const setTempToReport = device.state.fixedTemperature === 'ON' ? device.state.targetTemperature : 0
+				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: setTempToReport, valvePosition: 0})
 				device.ThermostatService.getCharacteristic(device.customCharacteristic.ValvePosition).updateValue(0)
 			}
 		}
@@ -105,6 +106,17 @@ module.exports = (device, platform) => {
 							device.ConnectionSensorService.getCharacteristic(Characteristic.ContactSensorState).updateValue(0)
 					})
 			},
+
+			refreshShowersToday: () => {
+				dolphinApi.getAmountOfShowers(device.deviceName, device.resetHour)
+					.then(state => {
+						device.ThermostatService.getCharacteristic(device.customCharacteristic.ShowersToday).updateValue(state.totalShowers)
+					})
+					.catch(err => {
+						log.error('The plugin could not refresh the "Showers Today" status - ERROR OCCURRED:')
+						log.error(err.message || err.stack || err)
+					})
+			}
 		},
 	
 		set: {

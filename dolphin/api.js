@@ -171,6 +171,62 @@ module.exports = function (platform) {
 			};
 			
 			return axiosRequest(config)
+		},
+
+
+		getAmountOfShowers: async (deviceName, resetHour) => {
+			let secretKey
+			try {
+				secretKey = await getSecretKey()
+			} catch (err) {
+				log.easyDebug(`Can't Get Secret Key: ${err}`)
+				throw err
+			}
+			
+			if (!statePromise) {
+				statePromise = new Promise((resolve, reject) => {
+
+					const hourNow = new Date().getHours()
+					let startDateTime = new Date(new Date().setHours(resetHour,0,0,0))
+					let endDateTime = new Date(new Date().setHours(resetHour + 24,0,0,0))
+					if (hourNow < resetHour) {
+						startDateTime = new Date(new Date().setHours(resetHour - 24,0,0,0))
+						endDateTime = new Date(new Date().setHours(resetHour,0,0,0))
+					}
+					startDateTime = toLocalISOString(startDateTime)
+					endDateTime = toLocalISOString(endDateTime)
+					
+					let data = new FormData();
+					data.append('deviceName', deviceName);
+					data.append('email', platform.email);
+					data.append('secretKey', secretKey);
+					data.append('startDateTime', startDateTime);
+					data.append('endDateTime', endDateTime);
+					
+					const config = {
+						method: 'post',
+						url: 'https://api.dolphinboiler.com/V2/getAmountOfShowers.php',
+						headers: { 
+							...data.getHeaders()
+						},
+						data : data
+					};
+
+					axiosRequest(config)
+						.then(response => {
+							resolve(response)
+						})
+						.catch(error => {
+							reject(error)
+						})
+						.finally(() => {
+							statePromise = null
+						})
+
+				})
+			}
+			return statePromise
+
 		}
 	}
 }
@@ -199,4 +255,8 @@ const axiosRequest = (config) => {
 				}
 			})
 	})
+}
+
+const toLocalISOString = d => {
+	return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString()
 }
