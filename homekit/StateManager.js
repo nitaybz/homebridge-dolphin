@@ -89,7 +89,7 @@ module.exports = (device, platform) => {
 	const errHandler = (err) => {
 		device.setCommands = []
 		log.error('The plugin could not set the state - ERROR OCCURRED:')
-		log.error(err.message || err.stack)
+		log.error(err.message || err.stack || err)
 	}
 
 	const setState = (command) => {
@@ -154,10 +154,7 @@ module.exports = (device, platform) => {
 				log.easyDebug(`Turning ON Device ${device.deviceName} for ${numberOfShowers} Showers`)
 				return dolphinApi.turnOn(device.deviceName, '', numberOfShowers)
 					.then(setUpdate)
-					.catch(err => {
-						log.error('The plugin could not set the state - ERROR OCCURRED:')
-						log.error(err.message || err.stack)
-					})
+					.catch(errHandler)
 			}
 		}
 	}

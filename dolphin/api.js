@@ -181,9 +181,9 @@ const axiosRequest = (config) => {
 		axios(config)
 			.then(function (response) {
 				const res = response
-				if (res.error) {
-					log(res.error)
-					reject(res.error)
+				if (res.error || res.data.Error) {
+					reject(res.error || res.data.Error)
+					return
 				}
 				log.easyDebug('Response:', JSON.stringify(res.data))
 				resolve(res.data)
@@ -191,10 +191,8 @@ const axiosRequest = (config) => {
 			.catch(function (error) {
 				try {
 					const errMessage = error.toJSON().message
-					log(errMessage)
 					reject(errMessage)
 				} catch(err) {
-					log(error)
 					reject(error)
 				}
 			})
