@@ -21,6 +21,7 @@ class Thermostat {
 		this.name = device.name || `Dolphin ${this.deviceName}`
 		this.displayName = this.name
 		this.showerSwitches = {}
+		this.setCommands = []
 		this.boilRequested =  false
 
 		this.UUID = this.api.hap.uuid.generate(this.id.toString())

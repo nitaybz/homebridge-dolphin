@@ -81,8 +81,40 @@ module.exports = (device, platform) => {
 	const setUpdate = (res) => {
 		const state = res.Status
 		device.ignoreOnCommand = false
+		device.setCommands = []
 		if (state)
 			setTimeout(() => updateDeviceState(state), 1000)
+	}
+
+	const errHandler = (err) => {
+		device.setCommands = []
+		log.error('The plugin could not set the state - ERROR OCCURRED:')
+		log.error(err.message || err.stack)
+	}
+
+	const setState = (command) => {
+		device.setCommands.push(command)
+		clearTimeout(device.setStateTimeout)
+		return device.setStateTimeout = setTimeout(() => {
+			const turnOff = device.setCommands.find(command => command.state === 0)
+
+			if (turnOff) {
+				device.boilRequested = false
+				log.easyDebug(`Turning OFF Device ${device.deviceName}`)
+				return dolphinApi.turnOff(device.deviceName)
+					.then(setUpdate)
+					.catch(errHandler)
+			} else {
+				let setTemp = device.setCommands.find(command => command.temp)
+				setTemp = setTemp ? setTemp.temp : device.state.targetTemperature || 37
+				device.boilRequested = true
+				log.easyDebug(`Turning ON Device ${device.deviceName} with Temperature ${setTemp}ºC`)
+				return dolphinApi.setFixedTemperature(device.deviceName, setTemp)
+					.then(setUpdate)
+					.catch(errHandler)
+			}
+
+		}, 500)
 	}
 
 	return {
@@ -110,44 +142,11 @@ module.exports = (device, platform) => {
 	
 		set: {
 			TargetHeatingCoolingState: (state) => {
-				if (!state) {
-					device.boilRequested = false
-					log.easyDebug(`Turning OFF Device ${device.deviceName}`)
-					return dolphinApi.turnOff(device.deviceName)
-						.then(setUpdate)
-						.catch(err => {
-							log.error('The plugin could not set the state - ERROR OCCURRED:')
-							log.error(err.message || err.stack)
-						})
-				} else {
-					setTimeout(() => {
-						if (device.ignoreOnCommand)
-							return
-						device.boilRequested = true
-						log.easyDebug(`Turning ON Device ${device.deviceName} with Temperature ${device.state.targetTemperature || 37}ºC`)
-						return dolphinApi.setFixedTemperature(device.deviceName, device.state.targetTemperature || 37)
-							.then(setUpdate)
-							.catch(err => {
-								log.error('The plugin could not set the state - ERROR OCCURRED:')
-								log.error(err.message || err.stack)
-							})
-					}, 150)
-				}
+				return setState({state})
 			},
 		
 			TargetTemperature: (temp) => {
-				device.ignoreOnCommand = true
-				setTimeout(() => {
-					device.ignoreOnCommand = false
-				}, 300)
-				device.boilRequested = true
-				log.easyDebug(`Setting Device ${device.deviceName} with Temperature ${temp}ºC`)
-				return dolphinApi.setFixedTemperature(device.deviceName, temp)
-					.then(setUpdate)
-					.catch(err => {
-						log.error('The plugin could not set the state - ERROR OCCURRED:')
-						log.error(err.message || err.stack)
-					})
+				return setState({temp})
 			},
 
 			ShowerSwitch: (numberOfShowers) => {
