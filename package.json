@@ -34,7 +34,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": ""
+    "test": "node --test test/*.test.js"
   },
   "funding": [
     {

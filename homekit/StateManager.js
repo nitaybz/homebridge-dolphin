@@ -1,3 +1,5 @@
+const { shouldLogHistory } = require('./historyThrottle')
+
 module.exports = (device, platform) => {
 	const Characteristic = platform.api.hap.Characteristic
 	const log = platform.log
@@ -43,7 +45,11 @@ module.exports = (device, platform) => {
 			device.ThermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(1)
 			device.ThermostatService.getCharacteristic(device.customCharacteristic.ValvePosition).updateValue(100)
 			if (device.loggingService) {
-				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature, valvePosition: 100})
+				const entry = {time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature, valvePosition: 100}
+				if (shouldLogHistory(device.lastHistoryEntry, entry)) {
+					device.loggingService.addEntry(entry)
+					device.lastHistoryEntry = entry
+				}
 				device.ThermostatService.getCharacteristic(device.customCharacteristic.ValvePosition).updateValue(100)
 			}
 		} else {
@@ -55,7 +61,11 @@ module.exports = (device, platform) => {
 			device.boilRequested = false
 			device.ThermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(0)
 			if (device.loggingService) {
-				device.loggingService.addEntry({time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature, valvePosition: 0})
+				const entry = {time: Math.round(new Date().valueOf() / 1000), currentTemp: device.state.Temperature, setTemp: device.state.targetTemperature, valvePosition: 0}
+				if (shouldLogHistory(device.lastHistoryEntry, entry)) {
+					device.loggingService.addEntry(entry)
+					device.lastHistoryEntry = entry
+				}
 				device.ThermostatService.getCharacteristic(device.customCharacteristic.ValvePosition).updateValue(0)
 			}
 		}
